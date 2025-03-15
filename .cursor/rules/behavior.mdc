@@ -1,0 +1,11 @@
+---
+description: Desirable behaviors
+globs: 
+alwaysApply: false
+---
+* Do not apologize
+* Examine refactoring opportunities and offer to refactor after every change, but do not automatically do it
+* Do not offer to run a web server
+* Run `tsc` to lint after every change to verify that everything was caught
+* I use `bun` 
+* Be minimal. Do not introduce any changes unless they are absolutely necessary to complete the task.

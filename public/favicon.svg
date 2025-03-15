@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+ <g id="gameicon" transform="translate(60, 50) scale(1)">
+    <!-- Patagium and overall outline -->
+    <path d="M 0 -40 C -25 -35 -40 -30 -50 -30 C -55 -30 -45 0 -40 30 C -35 40 0 50 0 50 C 0 50 35 40 40 30 C 45 0 55 -30 50 -30 C 40 -30 25 -35 0 -40 Z" fill="#CCCCCC" />
+    
+    <!-- Limbs -->
+    <path d="M -10 -5 L -50 -30" stroke="#888888" stroke-width="2" />
+    <path d="M 10 -5 L 50 -30" stroke="#888888" stroke-width="2" />
+    <path d="M -8 5 L -40 30" stroke="#888888" stroke-width="2" />
+    <path d="M 8 5 L 40 30" stroke="#888888" stroke-width="2" />
+    
+    <!-- Eyes -->
+    <circle cx="-5" cy="-25" r="2" fill="black" />
+    <circle cx="5" cy="-25" r="2" fill="black" />
+    
+    <!-- Nose -->
+    <circle cx="0" cy="-40" r="1" fill="black" />
+    
+    <!-- Ears -->
+    <path d="M -10 -35 Q -15 -40 -20 -35" fill="none" stroke="#888888" stroke-width="2" />
+    <path d="M 10 -35 Q 15 -40 20 -35" fill="none" stroke="#888888" stroke-width="2" />
+  </g>
+</svg> 
