@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently 'bun:dev:*'",
     "dev:vite": "vite dev",
-    "dev:server": "bun server/index.ts  --watch",
+    "dev:server": "bun run --watch server/index.ts",
     "build": "vite build",
     "build:production": "vite build && mkdir -p build && cp -r dist build/ && cp -r server build/",
     "preview": "vite preview",
