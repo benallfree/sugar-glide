@@ -1,3 +1,4 @@
+import { createSquirrel } from './player'
 import { createScene } from './scene'
 import { createWorld } from './world'
 
@@ -18,13 +19,26 @@ export const createGame = (containerId: string) => {
   // Create world (ground and tree trunk)
   const { ground, trunk, sky } = createWorld(scene)
 
+  // Create squirrel player
+  const player = createSquirrel(scene, camera)
+
+  // Disable orbit controls since we're using character-based camera
+  controls.enabled = false
+
+  // Track time for animation
+  let lastTime = 0
+
   // Animation loop
   let animationFrameId: number | null = null
 
   // Start animation loop
-  const animate = () => {
-    // Update controls
-    controls.update()
+  const animate = (time: number) => {
+    // Calculate delta time in seconds
+    const deltaTime = (time - lastTime) / 1000
+    lastTime = time
+
+    // Update squirrel with delta time (capped to prevent large jumps after tab switch)
+    player.update(Math.min(deltaTime, 0.1))
 
     // Render scene
     renderer.render(scene, camera)
@@ -34,10 +48,13 @@ export const createGame = (containerId: string) => {
   }
 
   // Start the animation
-  animate()
+  animationFrameId = requestAnimationFrame(animate)
 
   // Create cleanup function
   const cleanup = () => {
+    // Clean up player controls
+    player.cleanup()
+
     // Cancel animation frame
     if (animationFrameId !== null) {
       cancelAnimationFrame(animationFrameId)
@@ -61,6 +78,7 @@ export const createGame = (containerId: string) => {
     renderer,
     controls,
     world: { ground, trunk, sky },
+    player,
     cleanup,
   }
 }
