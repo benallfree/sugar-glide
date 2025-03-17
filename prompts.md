@@ -28,7 +28,6 @@ Trying a fresh approach where I lead the agent step by step
   - but you changed the tagline
 - 5:30 🤮 review @spec.md again. please create a tree trunk with endless branches that ascend up the trunk. the branches are created and tracked server-side. i should be able to connect a second player and see the identical branch arrangement
   - please make a way for me to look around with the mouse
-    w
 
 ---
 
