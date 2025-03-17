@@ -1,6 +1,23 @@
 console.log(`Hello world`)
 
 import { io } from 'socket.io-client'
+import { createGame } from './game'
+
+// Game instance
+let game: ReturnType<typeof createGame> | null = null
+
+// Initialize the game when the startGame event is fired
+window.addEventListener('startGame', () => {
+  console.log('Starting game...')
+  game = createGame('game-container')
+})
+
+// Clean up game on window unload
+window.addEventListener('unload', () => {
+  if (game) {
+    game.cleanup()
+  }
+})
 
 const connectToSocketServer = () => {
   const statusElement = document.getElementById('status')
@@ -43,3 +60,11 @@ const connectToSocketServer = () => {
 
 // Start connection to socket server
 connectToSocketServer()
+
+// Set status to ready when window is loaded
+window.addEventListener('load', () => {
+  const statusElement = document.getElementById('status')
+  if (statusElement) {
+    statusElement.textContent = 'Ready to play!'
+  }
+})
