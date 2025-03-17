@@ -22,7 +22,7 @@ const createStaticServer = (app: express.Express) => {
 
   // Serve index.html for any route that doesn't match a static file
   // This is important for SPA routing
-  app.get('*', (req, res) => {
+  app.get('*', (_req, res) => {
     res.sendFile(join(distPath, 'index.html'))
   })
 
