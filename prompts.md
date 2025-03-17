@@ -28,11 +28,18 @@ Trying a fresh approach where I lead the agent step by step
   - but you changed the tagline
 - 5:30 🤮 review @spec.md again. please create a tree trunk with endless branches that ascend up the trunk. the branches are created and tracked server-side. i should be able to connect a second player and see the identical branch arrangement
   - please make a way for me to look around with the mouse
+    w
 
 ---
 
-note: it keeps going off the rails adding features that were not requested
+note: it keeps going off the rails adding features that were not requested. i discovered a feature in Cursor where it indexes git history. I'm re-using the repo from Gnar and the Vibe Starter Kit and that may be affecting things. I also added `spec.md` to `.cursorignore` so it doesn't get overly ambitions. Let's try again.
 
 ---
 
-- 5:40 review @spec.md again. please create a tree trunk with endless branches that ascend up the trunk. the branches are created and tracked server-side. i should be able to connect a second player and see the identical branch arrangement. be very minimal, do not add any detail whatsoever that is not absolutely necessary for the task
+- 5:49 🤮 review and implement @spec.md .
+  - the splash screen just says `loading game` and i don't see a `player connected` in the console logs
+  - review everything again and check for `tsc` linter errors
+  - it is still not connecting ot the server
+  - when i press `start gliding`, nothing happens
+  - it still doesn't do anything when i say `start gliding`
+- 6:24 review and implement @spec.md . check carefully for regressions and dropping existing features/characteristics present in the framework
