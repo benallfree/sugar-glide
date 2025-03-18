@@ -26,7 +26,6 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
   let position = new THREE.Vector3(TRUNK_RADIUS, 10, 0) // Start at 10 units up the trunk
   let trunkAngle = Math.atan2(position.x, position.z) // Angle around trunk
   let orientationAngle = 0 // Angle relative to trunk surface (0 = up, PI/2 = clockwise around trunk)
-  let rotation = new THREE.Euler(0, Math.PI / 2, 0) // Face tangent to trunk
 
   // Movement state
   let movementState: MovementState = {
@@ -79,7 +78,6 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
   // Create squirrel mesh
   const squirrel = createSquirrelMesh()
   squirrel.position.copy(position)
-  squirrel.rotation.copy(rotation)
   scene.add(squirrel)
 
   // Calculate bounding box for the squirrel model
@@ -324,8 +322,6 @@ function createSquirrelMesh() {
   backLeftLeg.position.set(-0.2, -0.4, -0.2)
   backLeftLeg.rotation.x = -Math.PI / 6
   group.add(backLeftLeg)
-
-  group.rotation.y = Math.PI / 2
 
   return group
 }
