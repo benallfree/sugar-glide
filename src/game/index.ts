@@ -1,3 +1,4 @@
+import { createDebugPanel } from './debug'
 import { createSquirrel } from './player'
 import { createScene } from './scene'
 import { createWorld } from './world'
@@ -21,6 +22,9 @@ export const createGame = (containerId: string) => {
 
   // Create squirrel player
   const player = createSquirrel(scene, camera)
+
+  // Create debug panel
+  const debugPanel = createDebugPanel(scene)
 
   // Disable orbit controls since we're using character-based camera
   controls.enabled = false
@@ -55,6 +59,9 @@ export const createGame = (containerId: string) => {
     // Clean up player controls
     player.cleanup()
 
+    // Clean up debug panel
+    debugPanel.cleanup()
+
     // Cancel animation frame
     if (animationFrameId !== null) {
       cancelAnimationFrame(animationFrameId)
@@ -79,6 +86,7 @@ export const createGame = (containerId: string) => {
     controls,
     world: { ground, trunk, sky },
     player,
+    debugPanel,
     cleanup,
   }
 }
