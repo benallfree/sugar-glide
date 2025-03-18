@@ -140,6 +140,34 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
     tail.rotation.x = Math.PI / 3
     group.add(tail)
 
+    // Legs
+    const legGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.4, 6)
+    const legMaterial = new THREE.MeshLambertMaterial({ color: 0x8b4513 })
+
+    // Front right leg
+    const frontRightLeg = new THREE.Mesh(legGeometry, legMaterial)
+    frontRightLeg.position.set(0.2, -0.4, 0.2)
+    frontRightLeg.rotation.x = Math.PI / 6
+    group.add(frontRightLeg)
+
+    // Front left leg
+    const frontLeftLeg = new THREE.Mesh(legGeometry, legMaterial)
+    frontLeftLeg.position.set(-0.2, -0.4, 0.2)
+    frontLeftLeg.rotation.x = Math.PI / 6
+    group.add(frontLeftLeg)
+
+    // Back right leg
+    const backRightLeg = new THREE.Mesh(legGeometry, legMaterial)
+    backRightLeg.position.set(0.2, -0.4, -0.2)
+    backRightLeg.rotation.x = -Math.PI / 6
+    group.add(backRightLeg)
+
+    // Back left leg
+    const backLeftLeg = new THREE.Mesh(legGeometry, legMaterial)
+    backLeftLeg.position.set(-0.2, -0.4, -0.2)
+    backLeftLeg.rotation.x = -Math.PI / 6
+    group.add(backLeftLeg)
+
     // Rotate to face outward from trunk
     group.rotation.y = Math.PI / 2
 
