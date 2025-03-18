@@ -14,9 +14,28 @@ export const createDebugPanel = (scene: THREE.Scene) => {
   let hideTrunk = false
   let treeTrunk: THREE.Object3D | null = null
   let panel: HTMLElement | null = null
+  let wasInGameMode = false // Track if we were in game mode before opening panel
 
   // Reference for trunk radius to identify it in the scene
   const TRUNK_RADIUS = 3 // Should match the trunk radius in world.ts
+
+  // Pointer lock management
+  const exitGameMode = () => {
+    if (document.pointerLockElement) {
+      wasInGameMode = true
+      document.exitPointerLock()
+    }
+  }
+
+  const restoreGameMode = () => {
+    if (wasInGameMode) {
+      const gameContainer = document.getElementById('game-container')
+      if (gameContainer) {
+        gameContainer.requestPointerLock()
+      }
+      wasInGameMode = false
+    }
+  }
 
   // Load saved debug settings from localStorage
   const loadDebugSettings = () => {
@@ -113,6 +132,13 @@ export const createDebugPanel = (scene: THREE.Scene) => {
 
     if (panel) {
       panel.style.display = isPanelOpen ? 'block' : 'none'
+
+      // Handle pointer lock based on panel state
+      if (isPanelOpen) {
+        exitGameMode()
+      } else {
+        restoreGameMode()
+      }
     }
   }
 
