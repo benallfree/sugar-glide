@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import { Player } from '../player'
+import createDebugArrows from './arrows'
 
 // Debug panel constants
 const DEBUG_PANEL_WIDTH = 250 // Width in pixels
@@ -8,7 +10,7 @@ const STORAGE_KEY = 'sugar-glide-debug-settings' // Storage key for localStorage
 /**
  * Create a debug panel with various game debugging features
  */
-export const createDebugPanel = (scene: THREE.Scene) => {
+export const createDebugPanel = (scene: THREE.Scene, player: Player) => {
   // Debug state
   let isPanelOpen = false
   let hideTrunk = false
@@ -16,6 +18,9 @@ export const createDebugPanel = (scene: THREE.Scene) => {
   let treeTrunk: THREE.Object3D | null = null
   let panel: HTMLElement | null = null
   let wasInGameMode = false // Track if we were in game mode before opening panel
+
+  // Create debug arrows
+  const arrows = createDebugArrows(scene)
 
   // Reference for trunk radius to identify it in the scene
   const TRUNK_RADIUS = 3 // Should match the trunk radius in world.ts
@@ -192,12 +197,7 @@ export const createDebugPanel = (scene: THREE.Scene) => {
 
   // Update coordinate system visibility
   const updateCoordinateVisibility = () => {
-    // Find all arrow helpers in the scene
-    scene.traverse((object) => {
-      if (object instanceof THREE.ArrowHelper) {
-        object.visible = showCoordinates
-      }
-    })
+    arrows.setArrowsVisible(showCoordinates)
   }
 
   // Toggle panel visibility
@@ -232,12 +232,22 @@ export const createDebugPanel = (scene: THREE.Scene) => {
   updateTrunkVisibility() // Apply trunk visibility setting
   updateCoordinateVisibility() // Apply coordinate system visibility setting
 
+  // Update function to be called in animation loop
+  const update = () => {
+    if (showCoordinates) {
+      const { meshPosition, normal, up, forward } = player.getOrientationVectors()
+      arrows.updateArrows(meshPosition, normal, up, forward)
+    }
+  }
+
   return {
     togglePanel,
     isOpen: () => isPanelOpen,
+    update,
     cleanup: () => {
       cleanupKeyboardEvents()
       removePanel()
+      arrows.cleanup()
     },
   }
 }

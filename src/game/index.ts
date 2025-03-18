@@ -29,7 +29,7 @@ export const createGame = (containerId: string) => {
   const unsubscribeInput = inputController.subscribe(player.handleMovement)
 
   // Create debug panel
-  const debugPanel = createDebugPanel(scene)
+  const debugPanel = createDebugPanel(scene, player)
 
   // Disable orbit controls since we're using character-based camera
   controls.enabled = false
@@ -48,6 +48,9 @@ export const createGame = (containerId: string) => {
 
     // Update squirrel with delta time (capped to prevent large jumps after tab switch)
     player.update(Math.min(deltaTime, 0.1))
+
+    // Update debug visualization
+    debugPanel.update()
 
     // Render scene
     renderer.render(scene, camera)

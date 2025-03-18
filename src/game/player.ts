@@ -35,35 +35,6 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
     right: false,
   }
 
-  // Debug helpers
-  const normalArrow = new THREE.ArrowHelper(
-    new THREE.Vector3(1, 0, 0),
-    new THREE.Vector3(),
-    1,
-    0xff0000
-  )
-  const upArrow = new THREE.ArrowHelper(
-    new THREE.Vector3(0, 1, 0),
-    new THREE.Vector3(),
-    1,
-    0x00ff00
-  )
-  const forwardArrow = new THREE.ArrowHelper(
-    new THREE.Vector3(0, 0, 1),
-    new THREE.Vector3(),
-    1,
-    0x0000ff
-  )
-
-  // Hide arrows by default
-  normalArrow.visible = false
-  upArrow.visible = false
-  forwardArrow.visible = false
-
-  scene.add(normalArrow)
-  scene.add(upArrow)
-  scene.add(forwardArrow)
-
   // Movement tracking for camera prediction
   let velocity = new THREE.Vector3()
   let lastPosition = position.clone()
@@ -164,14 +135,8 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
     // Update dynamic camera
     updateDynamicCamera(trunkAngle, deltaTime, movementSpeed)
 
-    // Update debug arrows
-    normalArrow.position.copy(meshPosition)
-    upArrow.position.copy(meshPosition)
-    forwardArrow.position.copy(meshPosition)
-
-    normalArrow.setDirection(normal)
-    upArrow.setDirection(up)
-    forwardArrow.setDirection(forward)
+    // Return vectors for debug visualization
+    return { meshPosition, normal, up, forward }
   }
 
   // Enhanced dynamic camera that intelligently follows the squirrel
@@ -243,16 +208,30 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
     squirrel,
     position,
     update: (deltaTime: number) => {
-      updateSquirrel(deltaTime)
+      return updateSquirrel(deltaTime)
     },
     cleanup: () => {
-      // Clean up debug helpers
-      scene.remove(normalArrow)
-      scene.remove(upArrow)
-      scene.remove(forwardArrow)
+      scene.remove(squirrel)
     },
     handleMovement: (state: MovementState) => {
       movementState = { ...state }
+    },
+    getOrientationVectors: () => {
+      // Calculate current vectors without updating state
+      const normal = new THREE.Vector3(Math.sin(trunkAngle), 0, Math.cos(trunkAngle)).normalize()
+      const up = new THREE.Vector3(0, 1, 0)
+      const forward = new THREE.Vector3()
+      forward.crossVectors(up, normal)
+
+      // Apply orientation
+      const orientationMatrix = new THREE.Matrix4()
+      orientationMatrix.makeRotationAxis(normal, orientationAngle)
+      forward.applyMatrix4(orientationMatrix)
+
+      // Get current mesh position
+      const meshPosition = position.clone().add(normal.clone().multiplyScalar(bottomOffset))
+
+      return { meshPosition, normal, up, forward }
     },
   }
 }
@@ -325,3 +304,5 @@ function createSquirrelMesh() {
 
   return group
 }
+
+export type Player = ReturnType<typeof createSquirrel>
