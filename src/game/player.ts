@@ -212,6 +212,10 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
     // Update rotation to face tangent to trunk (perpendicular to radius)
     squirrel.rotation.y = angle + Math.PI / 2
 
+    // Calculate and apply rotation to align feet with trunk surface
+    // This rotates the squirrel around its local Z axis to match the trunk's surface
+    squirrel.rotation.z = Math.atan2(position.y, TRUNK_RADIUS)
+
     // Calculate velocities for camera prediction
     verticalVelocity = (position.y - lastPosition.y) / deltaTime
     rotationalVelocity = (angle - previousAngle) / deltaTime
