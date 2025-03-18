@@ -3,6 +3,7 @@ import * as THREE from 'three'
 // Debug panel constants
 const DEBUG_PANEL_WIDTH = 250 // Width in pixels
 const DEBUG_PANEL_PADDING = 10 // Padding in pixels
+const STORAGE_KEY = 'sugar-glide-debug-settings' // Storage key for localStorage
 
 /**
  * Create a debug panel with various game debugging features
@@ -16,6 +17,33 @@ export const createDebugPanel = (scene: THREE.Scene) => {
 
   // Reference for trunk radius to identify it in the scene
   const TRUNK_RADIUS = 3 // Should match the trunk radius in world.ts
+
+  // Load saved debug settings from localStorage
+  const loadDebugSettings = () => {
+    try {
+      const savedSettings = localStorage.getItem(STORAGE_KEY)
+      if (!savedSettings) return
+
+      const settings = JSON.parse(savedSettings)
+      isPanelOpen = settings.isPanelOpen ?? false
+      hideTrunk = settings.hideTrunk ?? false
+    } catch (error) {
+      console.error('Failed to load debug settings:', error)
+    }
+  }
+
+  // Save current debug settings to localStorage
+  const saveDebugSettings = () => {
+    try {
+      const settings = {
+        isPanelOpen,
+        hideTrunk,
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+    } catch (error) {
+      console.error('Failed to save debug settings:', error)
+    }
+  }
 
   // Create the debug panel DOM element
   const createPanel = () => {
@@ -50,6 +78,7 @@ export const createDebugPanel = (scene: THREE.Scene) => {
     const trunkToggle = document.createElement('input')
     trunkToggle.type = 'checkbox'
     trunkToggle.id = 'trunk-toggle'
+    trunkToggle.checked = hideTrunk // Apply saved setting
     trunkToggleContainer.appendChild(trunkToggle)
 
     const trunkLabel = document.createElement('label')
@@ -61,6 +90,7 @@ export const createDebugPanel = (scene: THREE.Scene) => {
     trunkToggle.addEventListener('change', () => {
       hideTrunk = trunkToggle.checked
       updateTrunkVisibility()
+      saveDebugSettings() // Save changes to localStorage
     })
 
     document.body.appendChild(panel)
@@ -112,6 +142,7 @@ export const createDebugPanel = (scene: THREE.Scene) => {
   const togglePanel = () => {
     isPanelOpen = !isPanelOpen
     updatePanelVisibility()
+    saveDebugSettings() // Save changes to localStorage
   }
 
   // Setup keyboard event listener for debug panel
@@ -131,9 +162,12 @@ export const createDebugPanel = (scene: THREE.Scene) => {
     }
   }
 
-  // Setup initial state
+  // Load saved settings and setup initial state
+  loadDebugSettings()
   const cleanupKeyboardEvents = setupKeyboardEvents()
-  panel = createPanel() // Create but don't show
+  panel = createPanel() // Create panel
+  updatePanelVisibility() // Set visibility based on loaded settings
+  updateTrunkVisibility() // Apply trunk visibility setting
 
   return {
     togglePanel,
