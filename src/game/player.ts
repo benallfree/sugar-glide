@@ -4,6 +4,9 @@ import * as THREE from 'three'
 const CLIMB_SPEED = 10 // Units per second
 const ROTATION_SPEED = 3 // Radians per second
 const TRUNK_RADIUS = 3 // Must match the tree trunk radius in world.ts
+const MOVEMENT_SPEED = 8 // Units per second for general movement
+const TURN_SPEED = 4 // Radians per second for in-place rotation
+const SQUIRREL_BODY_OFFSET = 0.4 // Distance to offset squirrel from trunk surface
 
 // Camera constants
 const CAMERA_BASE_DISTANCE = 7 // Base distance from trunk
@@ -20,13 +23,14 @@ const CAMERA_PREDICTION_STRENGTH = 2.0 // How strongly camera predicts movement
 export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
   // State
   let position = new THREE.Vector3(TRUNK_RADIUS, 10, 0) // Start at 10 units up the trunk
+  let trunkAngle = Math.atan2(position.x, position.z) // Angle around trunk
+  let orientationAngle = 0 // Angle relative to trunk surface (0 = up, PI/2 = clockwise around trunk)
   let rotation = new THREE.Euler(0, Math.PI / 2, 0) // Face tangent to trunk
 
   // Movement tracking for camera prediction
-  let verticalVelocity = 0
-  let rotationalVelocity = 0
+  let velocity = new THREE.Vector3()
   let lastPosition = position.clone()
-  let lastAngle = Math.atan2(position.x, position.z)
+  let lastTrunkAngle = trunkAngle
 
   // Camera state
   let targetCameraPosition = new THREE.Vector3()
@@ -39,6 +43,11 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
   squirrel.position.copy(position)
   squirrel.rotation.copy(rotation)
   scene.add(squirrel)
+
+  // Calculate bounding box for the squirrel model
+  const boundingBox = new THREE.Box3().setFromObject(squirrel)
+  const squirrelHeight = boundingBox.max.y - boundingBox.min.y
+  const bottomOffset = -boundingBox.min.y // Distance from origin to bottom of model
 
   // Movement controls
   const keys = {
@@ -178,64 +187,73 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
   const updateSquirrel = (deltaTime: number) => {
     // Store previous position for velocity calculation
     lastPosition.copy(position)
-    const previousAngle = lastAngle
+    const previousTrunkAngle = lastTrunkAngle
 
-    // Vertical movement (up/down the trunk)
-    if (keys.up) {
-      position.y += CLIMB_SPEED * deltaTime
+    // Handle rotation (A/D keys)
+    if (keys.left) {
+      orientationAngle += TURN_SPEED * deltaTime
     }
-    if (keys.down) {
-      position.y -= CLIMB_SPEED * deltaTime
+    if (keys.right) {
+      orientationAngle -= TURN_SPEED * deltaTime
+    }
+
+    // Forward movement (W key)
+    if (keys.up) {
+      // Decompose movement into vertical and circumferential components
+      const verticalComponent = Math.cos(orientationAngle) * MOVEMENT_SPEED * deltaTime
+      const circumferentialComponent = Math.sin(orientationAngle) * MOVEMENT_SPEED * deltaTime
+
+      // Apply vertical movement
+      position.y += verticalComponent
+
+      // Apply circumferential movement
+      trunkAngle += circumferentialComponent / TRUNK_RADIUS
+
       // Prevent going below ground
-      if (position.y < 1) {
-        position.y = 1
+      if (position.y < bottomOffset) {
+        position.y = bottomOffset
       }
     }
 
-    // Rotational movement (around the trunk)
-    let angle = Math.atan2(position.x, position.z)
-    if (keys.left) {
-      angle += ROTATION_SPEED * deltaTime
-    }
-    if (keys.right) {
-      angle -= ROTATION_SPEED * deltaTime
-    }
-    lastAngle = angle
+    // Calculate the normal vector pointing outward from trunk
+    const normalVector = new THREE.Vector3(Math.sin(trunkAngle), 0, Math.cos(trunkAngle))
 
-    // Keep squirrel stuck to trunk surface at all times
-    position.x = TRUNK_RADIUS * Math.sin(angle)
-    position.z = TRUNK_RADIUS * Math.cos(angle)
+    // Update position on trunk surface
+    position.x = TRUNK_RADIUS * Math.sin(trunkAngle)
+    position.z = TRUNK_RADIUS * Math.cos(trunkAngle)
+
+    // Position the mesh so its bottom touches the trunk surface
+    const meshPosition = position.clone().add(normalVector.multiplyScalar(bottomOffset))
 
     // Update mesh position
-    squirrel.position.copy(position)
+    squirrel.position.copy(meshPosition)
 
-    // Update rotation to face tangent to trunk (perpendicular to radius)
-    squirrel.rotation.y = angle + Math.PI / 2
+    // Update rotation to face in the orientation direction
+    // Base rotation to align with trunk surface
+    squirrel.rotation.y = trunkAngle + Math.PI / 2
+    // Add orientation angle
+    squirrel.rotation.y += orientationAngle
 
     // Calculate and apply rotation to align feet with trunk surface
-    // This rotates the squirrel around its local Z axis to match the trunk's surface
     squirrel.rotation.z = Math.atan2(position.y, TRUNK_RADIUS)
 
     // Calculate velocities for camera prediction
-    verticalVelocity = (position.y - lastPosition.y) / deltaTime
-    rotationalVelocity = (angle - previousAngle) / deltaTime
+    velocity.subVectors(position, lastPosition).divideScalar(deltaTime)
+    lastTrunkAngle = trunkAngle
 
     // Calculate movement speed for camera adjustments
-    const movementSpeed = Math.sqrt(
-      verticalVelocity * verticalVelocity +
-        rotationalVelocity * rotationalVelocity * TRUNK_RADIUS * TRUNK_RADIUS
-    )
+    const movementSpeed = velocity.length()
 
     // Update dynamic camera
-    updateDynamicCamera(angle, deltaTime, movementSpeed)
+    updateDynamicCamera(trunkAngle, deltaTime, movementSpeed)
   }
 
   // Enhanced dynamic camera that intelligently follows the squirrel
-  const updateDynamicCamera = (angle: number, deltaTime: number, movementSpeed: number) => {
+  const updateDynamicCamera = (trunkAngle: number, deltaTime: number, movementSpeed: number) => {
     // 1. Adjust camera height based on vertical velocity
     const targetHeight =
       CAMERA_MIN_HEIGHT +
-      (Math.abs(verticalVelocity) / CLIMB_SPEED) * (CAMERA_MAX_HEIGHT - CAMERA_MIN_HEIGHT)
+      (Math.abs(velocity.y) / CLIMB_SPEED) * (CAMERA_MAX_HEIGHT - CAMERA_MIN_HEIGHT)
 
     currentCameraHeight = THREE.MathUtils.lerp(currentCameraHeight, targetHeight, CAMERA_SMOOTHING)
 
@@ -258,16 +276,16 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
     }
 
     // 4. Calculate base camera angle (opposite side of trunk from squirrel)
-    let cameraAngle = angle + Math.PI
+    let cameraAngle = trunkAngle + Math.PI
 
     // 5. Apply rotational prediction to see around the trunk during rotation
-    if (Math.abs(rotationalVelocity) > 0.1) {
+    if (Math.abs(velocity.x) > 0.1 || Math.abs(velocity.z) > 0.1) {
       // Adjust camera angle to lead the movement direction
-      cameraAngle += rotationalVelocity * CAMERA_PREDICTION_STRENGTH * deltaTime
+      cameraAngle += Math.atan2(velocity.x, velocity.z) * CAMERA_PREDICTION_STRENGTH * deltaTime
     }
 
     // 6. Calculate target camera position with prediction
-    const predictedHeight = position.y + verticalVelocity * CAMERA_PREDICTION_STRENGTH * deltaTime
+    const predictedHeight = position.y + velocity.y * CAMERA_PREDICTION_STRENGTH * deltaTime
 
     targetCameraPosition.set(
       Math.sin(cameraAngle) * (TRUNK_RADIUS + currentCameraDistance),
@@ -291,7 +309,7 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
 
     // 9. Dynamic tilt based on vertical velocity
     const tiltAmount =
-      -0.2 - Math.sign(verticalVelocity) * Math.min(Math.abs(verticalVelocity) / CLIMB_SPEED, 0.2)
+      -0.2 - Math.sign(velocity.y) * Math.min(Math.abs(velocity.y) / CLIMB_SPEED, 0.2)
     camera.rotateX(tiltAmount)
   }
 
