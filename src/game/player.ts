@@ -53,14 +53,12 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
 
   // Calculate bounding box for the squirrel model
   const boundingBox = new THREE.Box3().setFromObject(squirrel)
-  const squirrelHeight = boundingBox.max.y - boundingBox.min.y
   const bottomOffset = -boundingBox.min.y // Distance from origin to bottom of model
 
   // Update the squirrel position
   const updateSquirrel = (deltaTime: number) => {
     // Store previous position for velocity calculation
     lastPosition.copy(position)
-    const previousTrunkAngle = lastTrunkAngle
 
     // Handle rotation (left/right input)
     if (movementState.left) {

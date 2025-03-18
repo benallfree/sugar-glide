@@ -23,6 +23,10 @@ export const createGame = (containerId: string) => {
 
   // Create squirrel player
   const player = createSquirrel(scene, camera)
+  // First rotate -90° around X to get nose pointing up
+  player.squirrel.rotation.x = -Math.PI / 2
+  // Then rotate 180° around Y to get feet pointing away from viewer
+  player.squirrel.rotation.z = Math.PI
 
   // Create and setup input controller
   const inputController = createInputController()
