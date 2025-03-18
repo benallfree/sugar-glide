@@ -12,6 +12,7 @@ export const createDebugPanel = (scene: THREE.Scene) => {
   // Debug state
   let isPanelOpen = false
   let hideTrunk = false
+  let showCoordinates = false
   let treeTrunk: THREE.Object3D | null = null
   let panel: HTMLElement | null = null
   let wasInGameMode = false // Track if we were in game mode before opening panel
@@ -46,6 +47,7 @@ export const createDebugPanel = (scene: THREE.Scene) => {
       const settings = JSON.parse(savedSettings)
       isPanelOpen = settings.isPanelOpen ?? false
       hideTrunk = settings.hideTrunk ?? false
+      showCoordinates = settings.showCoordinates ?? false
     } catch (error) {
       console.error('Failed to load debug settings:', error)
     }
@@ -57,6 +59,7 @@ export const createDebugPanel = (scene: THREE.Scene) => {
       const settings = {
         isPanelOpen,
         hideTrunk,
+        showCoordinates,
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
     } catch (error) {
@@ -97,7 +100,7 @@ export const createDebugPanel = (scene: THREE.Scene) => {
     const trunkToggle = document.createElement('input')
     trunkToggle.type = 'checkbox'
     trunkToggle.id = 'trunk-toggle'
-    trunkToggle.checked = hideTrunk // Apply saved setting
+    trunkToggle.checked = hideTrunk
     trunkToggleContainer.appendChild(trunkToggle)
 
     const trunkLabel = document.createElement('label')
@@ -109,7 +112,30 @@ export const createDebugPanel = (scene: THREE.Scene) => {
     trunkToggle.addEventListener('change', () => {
       hideTrunk = trunkToggle.checked
       updateTrunkVisibility()
-      saveDebugSettings() // Save changes to localStorage
+      saveDebugSettings()
+    })
+
+    // Toggle for coordinate system visualization
+    const coordToggleContainer = document.createElement('div')
+    coordToggleContainer.style.margin = '10px 0'
+    panel.appendChild(coordToggleContainer)
+
+    const coordToggle = document.createElement('input')
+    coordToggle.type = 'checkbox'
+    coordToggle.id = 'coord-toggle'
+    coordToggle.checked = showCoordinates
+    coordToggleContainer.appendChild(coordToggle)
+
+    const coordLabel = document.createElement('label')
+    coordLabel.htmlFor = 'coord-toggle'
+    coordLabel.textContent = ' Show Coordinate System'
+    coordLabel.style.marginLeft = '5px'
+    coordToggleContainer.appendChild(coordLabel)
+
+    coordToggle.addEventListener('change', () => {
+      showCoordinates = coordToggle.checked
+      updateCoordinateVisibility()
+      saveDebugSettings()
     })
 
     document.body.appendChild(panel)
@@ -164,6 +190,16 @@ export const createDebugPanel = (scene: THREE.Scene) => {
     }
   }
 
+  // Update coordinate system visibility
+  const updateCoordinateVisibility = () => {
+    // Find all arrow helpers in the scene
+    scene.traverse((object) => {
+      if (object instanceof THREE.ArrowHelper) {
+        object.visible = showCoordinates
+      }
+    })
+  }
+
   // Toggle panel visibility
   const togglePanel = () => {
     isPanelOpen = !isPanelOpen
@@ -194,6 +230,7 @@ export const createDebugPanel = (scene: THREE.Scene) => {
   panel = createPanel() // Create panel
   updatePanelVisibility() // Set visibility based on loaded settings
   updateTrunkVisibility() // Apply trunk visibility setting
+  updateCoordinateVisibility() // Apply coordinate system visibility setting
 
   return {
     togglePanel,

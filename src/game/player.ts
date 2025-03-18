@@ -27,6 +27,35 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
   let orientationAngle = 0 // Angle relative to trunk surface (0 = up, PI/2 = clockwise around trunk)
   let rotation = new THREE.Euler(0, Math.PI / 2, 0) // Face tangent to trunk
 
+  // Debug helpers
+  const normalArrow = new THREE.ArrowHelper(
+    new THREE.Vector3(1, 0, 0),
+    new THREE.Vector3(),
+    1,
+    0xff0000
+  )
+  const upArrow = new THREE.ArrowHelper(
+    new THREE.Vector3(0, 1, 0),
+    new THREE.Vector3(),
+    1,
+    0x00ff00
+  )
+  const forwardArrow = new THREE.ArrowHelper(
+    new THREE.Vector3(0, 0, 1),
+    new THREE.Vector3(),
+    1,
+    0x0000ff
+  )
+
+  // Hide arrows by default
+  normalArrow.visible = false
+  upArrow.visible = false
+  forwardArrow.visible = false
+
+  scene.add(normalArrow)
+  scene.add(upArrow)
+  scene.add(forwardArrow)
+
   // Movement tracking for camera prediction
   let velocity = new THREE.Vector3()
   let lastPosition = position.clone()
@@ -215,27 +244,42 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
       }
     }
 
-    // Calculate the normal vector pointing outward from trunk
-    const normalVector = new THREE.Vector3(Math.sin(trunkAngle), 0, Math.cos(trunkAngle))
+    // Calculate basis vectors for squirrel's local coordinate system
+    // 1. Normal vector (points outward from trunk)
+    const normal = new THREE.Vector3(Math.sin(trunkAngle), 0, Math.cos(trunkAngle)).normalize()
+
+    // 2. Up vector (tangent to trunk, pointing "up")
+    const up = new THREE.Vector3(0, 1, 0)
+
+    // 3. Forward vector (direction squirrel is facing, based on orientation)
+    const forward = new THREE.Vector3()
+    forward.crossVectors(up, normal) // Start with vector tangent to trunk
+
+    // Create rotation matrix from these basis vectors
+    const rotationMatrix = new THREE.Matrix4()
+
+    // Rotate forward vector by orientation angle around normal
+    const orientationMatrix = new THREE.Matrix4()
+    orientationMatrix.makeRotationAxis(normal, orientationAngle)
+    forward.applyMatrix4(orientationMatrix)
+
+    // Recalculate up vector to ensure orthogonal basis
+    up.crossVectors(forward, normal)
+    up.normalize()
+
+    // Construct rotation matrix from orthogonal vectors
+    rotationMatrix.makeBasis(forward, up, normal)
 
     // Update position on trunk surface
     position.x = TRUNK_RADIUS * Math.sin(trunkAngle)
     position.z = TRUNK_RADIUS * Math.cos(trunkAngle)
 
-    // Position the mesh so its bottom touches the trunk surface
-    const meshPosition = position.clone().add(normalVector.multiplyScalar(bottomOffset))
+    // Position mesh with feet on trunk surface
+    const meshPosition = position.clone().add(normal.multiplyScalar(bottomOffset))
 
-    // Update mesh position
+    // Update mesh position and rotation
     squirrel.position.copy(meshPosition)
-
-    // Update rotation to face in the orientation direction
-    // Base rotation to align with trunk surface
-    squirrel.rotation.y = trunkAngle + Math.PI / 2
-    // Add orientation angle
-    squirrel.rotation.y += orientationAngle
-
-    // Calculate and apply rotation to align feet with trunk surface
-    squirrel.rotation.z = Math.atan2(position.y, TRUNK_RADIUS)
+    squirrel.rotation.setFromRotationMatrix(rotationMatrix)
 
     // Calculate velocities for camera prediction
     velocity.subVectors(position, lastPosition).divideScalar(deltaTime)
@@ -246,6 +290,15 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
 
     // Update dynamic camera
     updateDynamicCamera(trunkAngle, deltaTime, movementSpeed)
+
+    // Update debug arrows
+    normalArrow.position.copy(meshPosition)
+    upArrow.position.copy(meshPosition)
+    forwardArrow.position.copy(meshPosition)
+
+    normalArrow.setDirection(normal)
+    upArrow.setDirection(up)
+    forwardArrow.setDirection(forward)
   }
 
   // Enhanced dynamic camera that intelligently follows the squirrel
@@ -324,6 +377,10 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
     },
     cleanup: () => {
       cleanupControls()
+      // Clean up debug helpers
+      scene.remove(normalArrow)
+      scene.remove(upArrow)
+      scene.remove(forwardArrow)
     },
   }
 }
