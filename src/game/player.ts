@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { MovementState } from './input/MovementController'
 
 // Constants
 const CLIMB_SPEED = 10 // Units per second
@@ -26,6 +27,14 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
   let trunkAngle = Math.atan2(position.x, position.z) // Angle around trunk
   let orientationAngle = 0 // Angle relative to trunk surface (0 = up, PI/2 = clockwise around trunk)
   let rotation = new THREE.Euler(0, Math.PI / 2, 0) // Face tangent to trunk
+
+  // Movement state
+  let movementState: MovementState = {
+    up: false,
+    down: false,
+    left: false,
+    right: false,
+  }
 
   // Debug helpers
   const normalArrow = new THREE.ArrowHelper(
@@ -78,156 +87,22 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
   const squirrelHeight = boundingBox.max.y - boundingBox.min.y
   const bottomOffset = -boundingBox.min.y // Distance from origin to bottom of model
 
-  // Movement controls
-  const keys = {
-    up: false,
-    down: false,
-    left: false,
-    right: false,
-  }
-
-  // Setup keyboard controls
-  const setupControls = () => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      switch (e.code) {
-        case 'ArrowUp':
-        case 'KeyW':
-          keys.up = true
-          break
-        case 'ArrowDown':
-        case 'KeyS':
-          keys.down = true
-          break
-        case 'ArrowLeft':
-        case 'KeyA':
-          keys.left = true
-          break
-        case 'ArrowRight':
-        case 'KeyD':
-          keys.right = true
-          break
-      }
-    }
-
-    const onKeyUp = (e: KeyboardEvent) => {
-      switch (e.code) {
-        case 'ArrowUp':
-        case 'KeyW':
-          keys.up = false
-          break
-        case 'ArrowDown':
-        case 'KeyS':
-          keys.down = false
-          break
-        case 'ArrowLeft':
-        case 'KeyA':
-          keys.left = false
-          break
-        case 'ArrowRight':
-        case 'KeyD':
-          keys.right = false
-          break
-      }
-    }
-
-    window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('keyup', onKeyUp)
-
-    // Return cleanup function
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('keyup', onKeyUp)
-    }
-  }
-
-  // Create squirrel model using simple shapes
-  function createSquirrelMesh() {
-    const group = new THREE.Group()
-
-    // Body
-    const bodyGeometry = new THREE.SphereGeometry(0.5, 12, 8)
-    const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x8b4513 }) // Brown
-    const body = new THREE.Mesh(bodyGeometry, bodyMaterial)
-    body.scale.set(0.8, 1, 0.8)
-    group.add(body)
-
-    // Head
-    const headGeometry = new THREE.SphereGeometry(0.3, 8, 8)
-    const headMaterial = new THREE.MeshLambertMaterial({ color: 0x8b4513 })
-    const head = new THREE.Mesh(headGeometry, headMaterial)
-    head.position.set(0, 0.4, 0.4)
-    group.add(head)
-
-    // Eyes
-    const eyeGeometry = new THREE.SphereGeometry(0.05, 6, 6)
-    const eyeMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 })
-
-    const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial)
-    leftEye.position.set(-0.1, 0.5, 0.6)
-    group.add(leftEye)
-
-    const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial)
-    rightEye.position.set(0.1, 0.5, 0.6)
-    group.add(rightEye)
-
-    // Tail
-    const tailGeometry = new THREE.CylinderGeometry(0.1, 0.2, 0.8, 6)
-    const tailMaterial = new THREE.MeshLambertMaterial({ color: 0x8b4513 })
-    const tail = new THREE.Mesh(tailGeometry, tailMaterial)
-    tail.position.set(0, 0, -0.6)
-    tail.rotation.x = Math.PI / 3
-    group.add(tail)
-
-    // Legs
-    const legGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.4, 6)
-    const legMaterial = new THREE.MeshLambertMaterial({ color: 0x8b4513 })
-
-    // Front right leg
-    const frontRightLeg = new THREE.Mesh(legGeometry, legMaterial)
-    frontRightLeg.position.set(0.2, -0.4, 0.2)
-    frontRightLeg.rotation.x = Math.PI / 6
-    group.add(frontRightLeg)
-
-    // Front left leg
-    const frontLeftLeg = new THREE.Mesh(legGeometry, legMaterial)
-    frontLeftLeg.position.set(-0.2, -0.4, 0.2)
-    frontLeftLeg.rotation.x = Math.PI / 6
-    group.add(frontLeftLeg)
-
-    // Back right leg
-    const backRightLeg = new THREE.Mesh(legGeometry, legMaterial)
-    backRightLeg.position.set(0.2, -0.4, -0.2)
-    backRightLeg.rotation.x = -Math.PI / 6
-    group.add(backRightLeg)
-
-    // Back left leg
-    const backLeftLeg = new THREE.Mesh(legGeometry, legMaterial)
-    backLeftLeg.position.set(-0.2, -0.4, -0.2)
-    backLeftLeg.rotation.x = -Math.PI / 6
-    group.add(backLeftLeg)
-
-    // Rotate to face outward from trunk
-    group.rotation.y = Math.PI / 2
-
-    return group
-  }
-
   // Update the squirrel position
   const updateSquirrel = (deltaTime: number) => {
     // Store previous position for velocity calculation
     lastPosition.copy(position)
     const previousTrunkAngle = lastTrunkAngle
 
-    // Handle rotation (A/D keys)
-    if (keys.left) {
+    // Handle rotation (left/right input)
+    if (movementState.left) {
       orientationAngle += TURN_SPEED * deltaTime
     }
-    if (keys.right) {
+    if (movementState.right) {
       orientationAngle -= TURN_SPEED * deltaTime
     }
 
-    // Forward movement (W key)
-    if (keys.up) {
+    // Forward movement (up input)
+    if (movementState.up) {
       // Decompose movement into vertical and circumferential components
       const verticalComponent = Math.cos(orientationAngle) * MOVEMENT_SPEED * deltaTime
       const circumferentialComponent = Math.sin(orientationAngle) * MOVEMENT_SPEED * deltaTime
@@ -366,9 +241,6 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
     camera.rotateX(tiltAmount)
   }
 
-  // Setup controls and return cleanup function
-  const cleanupControls = setupControls()
-
   return {
     squirrel,
     position,
@@ -376,11 +248,84 @@ export const createSquirrel = (scene: THREE.Scene, camera: THREE.Camera) => {
       updateSquirrel(deltaTime)
     },
     cleanup: () => {
-      cleanupControls()
       // Clean up debug helpers
       scene.remove(normalArrow)
       scene.remove(upArrow)
       scene.remove(forwardArrow)
     },
+    handleMovement: (state: MovementState) => {
+      movementState = { ...state }
+    },
   }
+}
+
+// Create squirrel model using simple shapes
+function createSquirrelMesh() {
+  const group = new THREE.Group()
+
+  // Body
+  const bodyGeometry = new THREE.SphereGeometry(0.5, 12, 8)
+  const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x8b4513 }) // Brown
+  const body = new THREE.Mesh(bodyGeometry, bodyMaterial)
+  body.scale.set(0.8, 1, 0.8)
+  group.add(body)
+
+  // Head
+  const headGeometry = new THREE.SphereGeometry(0.3, 8, 8)
+  const headMaterial = new THREE.MeshLambertMaterial({ color: 0x8b4513 })
+  const head = new THREE.Mesh(headGeometry, headMaterial)
+  head.position.set(0, 0.4, 0.4)
+  group.add(head)
+
+  // Eyes
+  const eyeGeometry = new THREE.SphereGeometry(0.05, 6, 6)
+  const eyeMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 })
+
+  const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial)
+  leftEye.position.set(-0.1, 0.5, 0.6)
+  group.add(leftEye)
+
+  const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial)
+  rightEye.position.set(0.1, 0.5, 0.6)
+  group.add(rightEye)
+
+  // Tail
+  const tailGeometry = new THREE.CylinderGeometry(0.1, 0.2, 0.8, 6)
+  const tailMaterial = new THREE.MeshLambertMaterial({ color: 0x8b4513 })
+  const tail = new THREE.Mesh(tailGeometry, tailMaterial)
+  tail.position.set(0, 0, -0.6)
+  tail.rotation.x = Math.PI / 3
+  group.add(tail)
+
+  // Legs
+  const legGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.4, 6)
+  const legMaterial = new THREE.MeshLambertMaterial({ color: 0x8b4513 })
+
+  // Front right leg
+  const frontRightLeg = new THREE.Mesh(legGeometry, legMaterial)
+  frontRightLeg.position.set(0.2, -0.4, 0.2)
+  frontRightLeg.rotation.x = Math.PI / 6
+  group.add(frontRightLeg)
+
+  // Front left leg
+  const frontLeftLeg = new THREE.Mesh(legGeometry, legMaterial)
+  frontLeftLeg.position.set(-0.2, -0.4, 0.2)
+  frontLeftLeg.rotation.x = Math.PI / 6
+  group.add(frontLeftLeg)
+
+  // Back right leg
+  const backRightLeg = new THREE.Mesh(legGeometry, legMaterial)
+  backRightLeg.position.set(0.2, -0.4, -0.2)
+  backRightLeg.rotation.x = -Math.PI / 6
+  group.add(backRightLeg)
+
+  // Back left leg
+  const backLeftLeg = new THREE.Mesh(legGeometry, legMaterial)
+  backLeftLeg.position.set(-0.2, -0.4, -0.2)
+  backLeftLeg.rotation.x = -Math.PI / 6
+  group.add(backLeftLeg)
+
+  group.rotation.y = Math.PI / 2
+
+  return group
 }

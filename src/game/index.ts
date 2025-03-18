@@ -1,4 +1,5 @@
 import { createDebugPanel } from './debug'
+import { createInputController } from './input/createInputController'
 import { createSquirrel } from './player'
 import { createScene } from './scene'
 import { createWorld } from './world'
@@ -22,6 +23,10 @@ export const createGame = (containerId: string) => {
 
   // Create squirrel player
   const player = createSquirrel(scene, camera)
+
+  // Create and setup input controller
+  const inputController = createInputController()
+  const unsubscribeInput = inputController.subscribe(player.handleMovement)
 
   // Create debug panel
   const debugPanel = createDebugPanel(scene)
@@ -56,6 +61,10 @@ export const createGame = (containerId: string) => {
 
   // Create cleanup function
   const cleanup = () => {
+    // Clean up input controller
+    unsubscribeInput()
+    inputController.cleanup()
+
     // Clean up player controls
     player.cleanup()
 
