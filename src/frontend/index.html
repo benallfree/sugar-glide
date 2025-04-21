@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Sugar Glide</title>
+    <link rel="stylesheet" href="./styles.css" />
+
+    <!-- Disable text selection and magnifying glass -->
+    <style>
+      * {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      }
+      input {
+        -webkit-user-select: text;
+        user-select: text;
+      }
+    </style>
+
+    <!-- Prevent magnifying glass from double-tap long press -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Prevent default touch actions only on game elements
+        const isInteractive = (element) => {
+          const interactiveElements = [
+            'BUTTON',
+            'A',
+            'INPUT',
+            'SELECT',
+            'TEXTAREA',
+          ]
+          return (
+            interactiveElements.includes(element.tagName) ||
+            element.closest('button') ||
+            element.closest('a') ||
+            element.classList.contains('interactive')
+          )
+        }
+
+        // Prevent context menu (affects all elements)
+        document.addEventListener(
+          'contextmenu',
+          function (e) {
+            e.preventDefault()
+          },
+          false
+        )
+
+        // Special handling for iOS double-tap-and-hold
+        // Only prevent on non-interactive elements
+        let lastTap = 0
+        document.addEventListener(
+          'touchstart',
+          function (e) {
+            if (isInteractive(e.target)) {
+              return // Allow normal behavior for buttons, inputs, etc.
+            }
+
+            const now = Date.now()
+            const DOUBLE_TAP_THRESHOLD = 300
+            if (now - lastTap < DOUBLE_TAP_THRESHOLD) {
+              e.preventDefault()
+            }
+            lastTap = now
+          },
+          { passive: false }
+        )
+
+        // Allow touchend events to propagate normally
+        document.addEventListener(
+          'touchend',
+          function (e) {
+            if (!isInteractive(e.target)) {
+              e.preventDefault()
+            }
+          },
+          { passive: false }
+        )
+      })
+    </script>
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Sugar Glide" />
+    <meta
+      property="og:description"
+      content="Guide flying squirrels through the trees with their adorable baby squirrels in this fun gliding adventure!"
+    />
+    <meta property="og:image" content="/images/splash.jpg" />
+    <meta property="og:url" content="https://sugarglide.benallfree.com" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Sugar Glide" />
+    <meta
+      name="twitter:description"
+      content="Guide flying squirrels through the trees with their adorable baby squirrels in this fun gliding adventure!"
+    />
+    <meta name="twitter:image" content="/images/splash.jpg" />
+  </head>
+  <body>
+    <div id="splash-screen">
+      <div class="splash-image"></div>
+      <h1>Sugar Glide</h1>
+      <div class="instructions">
+        <div class="desktop-instructions">
+          Use WASD to move<br />
+          Space to climb (only when near trees)<br />
+          Mouse to look around<br />
+          Press B to open shop
+        </div>
+        <div class="mobile-instructions">
+          Use joystick to look around<br />
+          Hold Move button to move forward<br />
+          Hold Climb button near trees<br />
+          Tap Store to open shop
+        </div>
+      </div>
+      <button id="start-game">Click to Play</button>
+    </div>
+
+    <div id="console">
+      <input type="text" placeholder="Type command..." />
+    </div>
+    <script type="module" src="/main.js"></script>
+    <a
+      target="_blank"
+      href="https://jam.pieter.com"
+      style="
+        font-family: 'system-ui', sans-serif;
+        position: fixed;
+        bottom: -1px;
+        right: -1px;
+        padding: 7px;
+        font-size: 14px;
+        font-weight: bold;
+        background: #fff;
+        color: #000;
+        text-decoration: none;
+        z-index: 10;
+        border-top-left-radius: 12px;
+        z-index: 10000;
+        border: 1px solid #fff;
+      "
+      >🕹️ Vibe Jam 2025</a
+    >
+
+    <div
+      id="nav-group"
+      style="
+        font-family: 'system-ui', sans-serif;
+        position: fixed;
+        bottom: -1px;
+        left: -1px;
+        padding: 7px;
+        font-size: 14px;
+        font-weight: bold;
+        background: #fff;
+        color: #000;
+        text-decoration: none;
+        z-index: 10;
+        border-top-right-radius: 12px;
+        z-index: 10000;
+        border: 1px solid #fff;
+        display: flex;
+        flex-direction: row;
+        gap: 4px;
+      "
+    >
+      <a
+        href="https://portal.pieter.com"
+        style="
+          font-family: 'system-ui', sans-serif;
+          padding: 0;
+          font-size: 14px;
+          font-weight: bold;
+          color: #000;
+          text-decoration: none;
+          border-radius: 12px;
+        "
+        >🌐 To Vibeverse</a
+      >
+      <span style="color: #000">|</span>
+      <a
+        id="go-back"
+        style="
+          font-family: 'system-ui', sans-serif;
+          padding: 0;
+          font-size: 14px;
+          font-weight: bold;
+          color: #000;
+          text-decoration: none;
+          border-radius: 12px;
+          display: none;
+        "
+        >← Go Back</a
+      >
+    </div>
+    <script>
+      // Show Go Back link if ref parameter exists
+      const urlParams = new URLSearchParams(window.location.search)
+      const ref = urlParams.get('ref')
+      const goBackLink = document.getElementById('go-back')
+      const separator = goBackLink.previousElementSibling
+      if (ref) {
+        goBackLink.style.display = 'block'
+        goBackLink.href = ref
+        separator.style.display = 'block'
+      } else {
+        separator.style.display = 'none'
+      }
+    </script>
+  </body>
+</html>

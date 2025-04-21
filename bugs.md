@@ -1,0 +1,5 @@
+- when i add babies in a tree (/vibebb10), it puts me back on the ground
+- the splash screen allows mouse lock before pressing play now
+- summoning the store should unlock the mouse. dismissing it should lock the mouse again
+- holding space bar while launching from tree allows the player to continue gaining altitude
+- tabbing away and coming back into the game puts me back on the ground

@@ -1,0 +1,481 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.desktop-instructions,
+.desktop-status {
+  display: block;
+}
+
+.mobile-instructions,
+.mobile-status {
+  display: none;
+}
+
+#status-bar {
+  position: fixed;
+  top: 10px;
+  right: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  z-index: 100;
+}
+
+#status-bar .status-box {
+  position: relative;
+  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#status-bar .status-toggle {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#status-bar .status-toggle:hover {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+#status-bar .status-toggle.active {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+#status-bar .status-box .value {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  font-size: 0.8em;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+#status-bar .icon {
+  font-size: 24px;
+  transition: opacity 0.2s ease;
+}
+
+#status-bar .status-toggle.active .icon {
+  opacity: 1;
+}
+
+#status-bar .status-toggle:not(.active) .icon {
+  opacity: 0.7;
+}
+
+#status-bar .value {
+  font-size: 10px;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .desktop-instructions,
+  .desktop-status,
+  #vitality-meter {
+    display: none;
+  }
+
+  .mobile-instructions,
+  .mobile-status {
+    display: flex;
+  }
+
+  #store {
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    bottom: 15px;
+    padding: 20px;
+  }
+
+  .store-items {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .store-item {
+    padding: 15px;
+    gap: 8px;
+    width: auto;
+    min-height: 100px;
+  }
+
+  .store-item h3 {
+    font-size: 1.1em;
+  }
+
+  #store h2 {
+    font-size: 1.3em;
+    margin: 0 0 15px;
+  }
+
+  #instructions {
+    top: auto;
+    bottom: 200px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    white-space: nowrap;
+    font-size: 14px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 10px;
+  }
+
+  #mobile-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 180px;
+    padding: 20px;
+    pointer-events: none;
+  }
+
+  #mobile-controls > * {
+    pointer-events: auto;
+  }
+
+  .joystick-container {
+    position: relative;
+    width: 120px;
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #move-joystick-zone,
+  #look-joystick-zone {
+    width: 120px;
+    height: 120px;
+  }
+
+  .joystick-label {
+    color: white;
+    font-weight: bold;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+    font-size: 14px;
+  }
+
+  .mobile-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 140px;
+  }
+
+  #mobile-move,
+  #mobile-climb {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #mobile-move:active,
+  #mobile-climb:active {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+#mobile-controls {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  padding: 10px;
+}
+
+@media (max-width: 768px) {
+  #mobile-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+#joystick-zone {
+  width: 120px;
+  height: 120px;
+  position: relative;
+}
+
+#mobile-move,
+#mobile-climb,
+#mobile-store {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: bold;
+  text-transform: uppercase;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#mobile-move:active,
+#mobile-climb:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.mobile #vitality-fill {
+  height: 8px;
+  border-radius: 4px;
+}
+
+#console {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-family: monospace;
+  display: none;
+}
+
+#console.visible {
+  display: block;
+}
+
+#console input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: white;
+  font-family: monospace;
+  font-size: 14px;
+  outline: none;
+}
+
+#splash-screen .instructions {
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  border-radius: 10px;
+  margin: 20px 0;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+}
+
+#splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: Arial, sans-serif;
+  z-index: 10000;
+  overflow: hidden;
+}
+
+#splash-screen .splash-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('/images/splash.jpg') center/cover no-repeat;
+  opacity: 0.3;
+  z-index: -1;
+}
+
+#splash-screen h1,
+#splash-screen .instructions,
+#splash-screen button {
+  position: relative;
+  z-index: 1;
+}
+
+#splash-screen.hidden {
+  display: none;
+}
+
+#splash-screen h1 {
+  font-size: 3em;
+  margin-bottom: 20px;
+  color: #4caf50;
+}
+
+#splash-screen button {
+  padding: 15px 30px;
+  font-size: 1.2em;
+  background: #4caf50;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#splash-screen button:hover {
+  background: #45a049;
+}
+
+#store {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  font-family: Arial, sans-serif;
+  text-align: left;
+  display: none;
+  overflow-y: auto;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+#store h2 {
+  font-size: 1.5em;
+  margin: 0 0 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#store.visible {
+  display: block;
+}
+
+.store-items {
+  display: grid;
+  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  margin-bottom: 30px;
+}
+
+.store-item {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.store-item h3 {
+  margin: 0;
+  font-size: 1.2em;
+  color: #4caf50;
+}
+
+.store-item p {
+  margin: 0;
+  opacity: 0.8;
+  font-size: 0.9em;
+}
+
+.store-item p:last-child {
+  margin-top: auto;
+  font-weight: bold;
+  color: #4caf50;
+}
+
+.store-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.store-item:active {
+  transform: translateY(0);
+}
+
+.vitality-label {
+  color: white;
+  margin-bottom: 5px;
+}
+
+#vitality-bar {
+  width: 200px;
+  height: 20px;
+  background: #333;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#vitality-fill {
+  width: 100%;
+  height: 100%;
+  background: #2ecc71;
+  transition: width 0.3s;
+}
+
+/* Add smooth scrollbar styling */
+#store::-webkit-scrollbar {
+  width: 8px;
+}
+
+#store::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+#store::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+#store::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

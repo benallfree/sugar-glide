@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+* Keep changes as simple and isolated as possible
+* Use early returns
+* Prefer factory functions over classes
+* Separate concerns
+* Propose refactoring early, as soon as you see a chance

@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for rawhide on 2025-03-11T10:32:40-07:00
+# fly.toml app configuration file generated for sugar-glide on 2025-03-19T03:23:40-07:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -18,4 +18,3 @@ primary_region = 'sjc'
 
 [[vm]]
   size = 'shared-cpu-1x'
-  memory = '256mb'

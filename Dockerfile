@@ -28,13 +28,14 @@ RUN bun install --ci
 COPY . .
 
 # Build the application
-RUN bun run build:production
+RUN bun run build
 
 # Final stage for app image
 FROM base
 
 # Copy built application
-COPY --from=build /app/build /app/build
+COPY --from=build /app/dist /app/dist
+COPY --from=build /app/src/server /app/src/server
 COPY --from=build /app/package.json /app/package.json
 
 # Set the working directory
