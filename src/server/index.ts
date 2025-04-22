@@ -1,3 +1,4 @@
+import cors from 'cors'
 import express from 'express'
 import { createServer } from 'http'
 import { dirname } from 'path'
@@ -10,8 +11,15 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 const app = express()
+app.use(cors())
+
 const server = createServer(app)
-const io = new Server(server)
+const io = new Server(server, {
+  cors: {
+    origin: process.env.NODE_ENV === 'production' ? false : '*',
+    methods: ['GET', 'POST'],
+  },
+})
 
 // In production, serve static files from the Vite build
 if (process.env.NODE_ENV === 'production') {

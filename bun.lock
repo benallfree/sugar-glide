@@ -4,6 +4,8 @@
     "": {
       "name": "tree-climbing-game",
       "dependencies": {
+        "@types/cors": "^2.8.17",
+        "cors": "^2.8.5",
         "express": "^4.21.2",
         "nipplejs": "^0.10.2",
         "socket.io": "^4.8.1",
